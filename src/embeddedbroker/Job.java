@@ -2,10 +2,10 @@ package embeddedbroker;
 
 import java.util.List;
 
-public interface Job<Result> {
+public interface Job<TaskResult, JobResult> {
 
-	void addTask(Task<Result> task);
+	Job<TaskResult, JobResult> addTask(Task<TaskResult> task);
 
-	List<Task<Result>> getTasks();
+	List<Task<TaskResult>> getTasks();
 
 }

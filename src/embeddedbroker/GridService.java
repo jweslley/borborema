@@ -4,7 +4,7 @@ import java.util.concurrent.Future;
 
 public interface GridService {
 
-	<Result> Future<Result> submit(Job<Result> job);
+	<JobResult, TaskResult> Future<JobResult> submit(Job<TaskResult, JobResult> job);
 
 	void shutdown();
 
