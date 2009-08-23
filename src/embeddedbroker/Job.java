@@ -1,11 +1,9 @@
 package embeddedbroker;
 
-import java.util.List;
+import java.io.Serializable;
 
-public interface Job<TaskResult, JobResult> {
+public interface Job<TaskResult extends Serializable, JobResult> extends Iterable<Task<TaskResult>> {
 
 	Job<TaskResult, JobResult> addTask(Task<TaskResult> task);
-
-	List<Task<TaskResult>> getTasks();
 
 }

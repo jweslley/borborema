@@ -1,6 +1,8 @@
 package embeddedbroker;
 
-public interface Task<Result> {
+import java.io.Serializable;
+
+public interface Task<Result extends Serializable> extends Serializable {
 
 	Result execute();
 
