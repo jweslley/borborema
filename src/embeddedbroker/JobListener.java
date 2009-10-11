@@ -7,6 +7,6 @@ public interface JobListener extends EventListener {
 
 	void jobSubmitted(/* what params?*/);
 
-	void jobEnded(Future<?> result);
+	void jobFinished(Future<?> result);
 
 }

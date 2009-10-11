@@ -18,7 +18,7 @@ public final class BrokerAsyncApplicationClient extends AsyncApplicationClient<B
 	private boolean isBrokerUp;
 
 	public BrokerAsyncApplicationClient(ModuleContext context) throws CommuneNetworkException, ProcessorStartException {
-		super("BROKER_CLIENT", context);
+		super("EMBEDDEDBROKER_CLIENT", context);
 	}
 
 	@Override
@@ -33,6 +33,10 @@ public final class BrokerAsyncApplicationClient extends AsyncApplicationClient<B
 		BrokerAsyncManagerClient managerClient = getManagerClient();
 		getManager().addJob(managerClient, theJob);
 		return SyncContainerUtil.busyWaitForResponseObject(managerClient.getBlockingQueue(), Integer.class);
+	}
+
+	public void cancelJob(int jobId) {
+		getManager().cancelJob(getManagerClient(), jobId);
 	}
 
 	public void notifyWhenJobIsFinished(int jobID) {
