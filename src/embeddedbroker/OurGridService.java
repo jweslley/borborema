@@ -97,7 +97,7 @@ public class OurGridService implements GridService {
 	}
 
 	private <JobResult, TaskResult extends Serializable>
-	Pair<JobSpec, List<File>> createJobSpec(Job<TaskResult, JobResult> job) throws GridServiceException {
+	Pair<JobSpec, List<File>> createJobSpec(Job<TaskResult, JobResult> job, String requirements) throws GridServiceException {
 
 		List<TaskSpec> tasks = new ArrayList<TaskSpec>();
 		List<File> outputs = new ArrayList<File>();
@@ -113,15 +113,22 @@ public class OurGridService implements GridService {
 			throw new GridServiceException("No tasks to process.");
 		}
 
-		JobSpec jobSpec = new JobSpec(job.toString());
+		if (requirements == null) {
+			Requirements req = job.getClass().getAnnotation(Requirements.class);
+			if (req != null) {
+				requirements = req.value();
+			} else {
+				requirements = "";
+			}
+		}
+
 		try {
-			jobSpec.setTaskSpecs(tasks);
+			JobSpec jobSpec = new JobSpec(job.toString(), requirements, tasks);
+			return new Pair<JobSpec, List<File>>(jobSpec, outputs);
 
 		} catch (JobSpecificationException e) {
 			throw new GridServiceException(e);
 		}
-
-		return new Pair<JobSpec, List<File>>(jobSpec, outputs);
 	}
 
 	private <JobResult, TaskResult extends Serializable>
