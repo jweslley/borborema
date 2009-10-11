@@ -54,10 +54,10 @@ public class OurGridService implements GridService {
 
 	public OurGridService(String configurationFilename) {
 		try {
-			PropertiesFileParser properties = new PropertiesFileParser(BrokerConfiguration.PROPERTIES_FILENAME);
+			PropertiesFileParser properties = new PropertiesFileParser(configurationFilename);
 			ModuleContext context = new BrokerComponentContextFactory(properties).createContext();
 			client = new BrokerAsyncApplicationClient(context);
-			client.waitUpTime(200);
+			client.waitUpTime(200); // TODO magic number
 
 			jobHandler = new JobHandler();
 			client.getContainer().deploy(BrokerConstants.JOB_ENDED_INTERESTED, jobHandler);
