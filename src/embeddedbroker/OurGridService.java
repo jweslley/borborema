@@ -39,6 +39,7 @@ import embeddedbroker.broker.BrokerAsyncApplicationClient;
 import embeddedbroker.executor.TaskRunner;
 import embeddedbroker.executor.codec.JavaSerializationCodec;
 import embeddedbroker.executor.codec.SerializationCodec;
+import embeddedbroker.util.Annotations;
 
 public class OurGridService implements GridService {
 
@@ -88,7 +89,7 @@ public class OurGridService implements GridService {
 	public final <JobResult, TaskResult extends Serializable>
 	Future<JobResult> submit(String requirements, Job<TaskResult, JobResult> job) {
 
-		Pair<JobSpec, List<File>> jobSpec = createJobSpec(job);
+		Pair<JobSpec, List<File>> jobSpec = createJobSpec(job, requirements);
 		int jobId = client.addJob(jobSpec._1);
 		GridFuture<TaskResult, JobResult> future = new GridFuture<TaskResult, JobResult>(jobId);
 		jobHandler.addJobResult(future, jobSpec._2);
@@ -114,12 +115,7 @@ public class OurGridService implements GridService {
 		}
 
 		if (requirements == null) {
-			Requirements req = job.getClass().getAnnotation(Requirements.class);
-			if (req != null) {
-				requirements = req.value();
-			} else {
-				requirements = "";
-			}
+			requirements = Annotations.getRequirements(job);
 		}
 
 		try {
@@ -154,11 +150,14 @@ public class OurGridService implements GridService {
 			.append(library.getName());
 		}
 
+		String defaultOptions = Annotations.getJvmOptions(job, "");
+		String jvmOptions = Annotations.getJvmOptions(task, defaultOptions);
+
 		/*for (File resource : resourceList) {
 			initBlock.putEntry(new IOEntry("put", resource.getAbsolutePath(), resource.getName()));
 		} createJarList()*/
 
-		String remoteCommand = "java -cp " + classpath.toString()
+		String remoteCommand = "java " + jvmOptions + " -cp " + classpath.toString()
 		+ " " + TaskRunner.class.getName() + " " + input.getName() + " " + output.getName();
 
 		IOBlock finalBlock = new IOBlock();
@@ -273,15 +272,16 @@ public class OurGridService implements GridService {
 		}
 
 		public boolean isDone() {
-			return finishedOrCancelled(getState());
+			return finishedOrCancelled(getState()) && !jobHandler.contains(jobId);
 		}
 
 		/**
 		 * Implements AQS base release to always signal after setting
-		 * final done status by nulling runner thread.
+		 * final done status by removing job.
 		 */
 		@Override
 		protected boolean tryReleaseShared(int ignore) {
+			jobHandler.removeJob(jobId);
 			return true;
 		}
 
@@ -355,6 +355,14 @@ public class OurGridService implements GridService {
 			jobs.put(future.jobId, new Pair<GridFuture, List<File>>(future, output));
 		}
 
+		public void removeJob(int jobId) {
+			jobs.remove(jobId);
+		}
+
+		public boolean contains(int jobId) {
+			return jobs.containsKey(jobId);
+		}
+
 		public Pair<GridFuture, List<File>> getJobResult(int jobId) {
 			Pair<GridFuture, List<File>> jobResult = jobs.get(jobId);
 			if (jobResult == null) {
@@ -397,9 +405,7 @@ public class OurGridService implements GridService {
 
 		@Override
 		public void schedulerHasBeenShutdown() {
-			// ignore
-			System.out
-			.println("OurGridService.JobHandler.schedulerHasBeenShutdown()");
+			logger.debug("OurGridService.JobHandler.schedulerHasBeenShutdown()");
 		}
 
 	}
