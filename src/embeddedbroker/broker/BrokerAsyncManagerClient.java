@@ -39,9 +39,9 @@ public final class BrokerAsyncManagerClient extends AsyncManagerClient<BrokerMan
 	@Override
 	public synchronized void operationSucceed(ControlOperationResult controlResult) {
 		if (controlResult.getResult() instanceof Integer) {
-			Integer jobID = (Integer) controlResult.getResult();
-			getBrokerAsyncApplicationClient().notifyWhenJobIsFinished(jobID);
-			SyncContainerUtil.putResponseObject(blockingQueue, jobID);
+			Integer jobId = (Integer) controlResult.getResult();
+			getBrokerAsyncApplicationClient().notifyWhenJobIsFinished(jobId);
+			SyncContainerUtil.putResponseObject(blockingQueue, jobId);
 
 		} else {
 			logger.error("Not an integer: " + controlResult.getResult().getClass());

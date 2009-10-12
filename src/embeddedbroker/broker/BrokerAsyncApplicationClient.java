@@ -53,10 +53,10 @@ public final class BrokerAsyncApplicationClient extends AsyncApplicationClient<B
 		this.isBrokerUp = isBrokerUp;
 	}
 
-	public void waitUpTime(long interval) { // TODO uptime
+	public void waitUpTime(long waitTimeInterval) {
 		try {
 			while (!isBrokerUp) {
-				Thread.sleep(interval);
+				Thread.sleep(waitTimeInterval);
 			}
 
 		} catch (InterruptedException e) {

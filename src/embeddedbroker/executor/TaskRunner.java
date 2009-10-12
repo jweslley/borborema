@@ -17,15 +17,14 @@ public class TaskRunner {
 	 * 			args[1] - target filename. Serialized object output.
 	 * 
 	 * TODO add another param args[2], which will be the codec class name.
-	 * TODO returns either the task result or the thrown exception. (use xml?!)
 	 * @throws IOException
 	 */
 	@SuppressWarnings("unchecked")
 	public static void main(String... args) throws IOException {
 		SerializationCodec codec = new JavaSerializationCodec();
-		Object rawTask = codec.readObject(new FileInputStream(args[0]));
+		Object task = codec.readObject(new FileInputStream(args[0]));
 
-		Serializable result = ((Task<Serializable>) rawTask).execute();
+		Serializable result = ((Task<Serializable>) task).execute();
 
 		codec.writeObject(result, new FileOutputStream(args[1]));
 	}

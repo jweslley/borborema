@@ -12,7 +12,7 @@ import java.util.Set;
 
 public abstract class AbstractJob<TaskResult extends Serializable, JobResult> implements Job<TaskResult, JobResult> {
 
-	private final Set<File> libraries = new HashSet<File>();
+	private final Set<File> jarFiles = new HashSet<File>();
 	private final Set<Task<TaskResult>> tasks = new HashSet<Task<TaskResult>>();
 
 	public final Job<TaskResult, JobResult> addTask(Task<TaskResult> task) {
@@ -29,21 +29,21 @@ public abstract class AbstractJob<TaskResult extends Serializable, JobResult> im
 	}
 
 	@Override
-	public final Iterable<File> getLibraries() {
-		return libraries;
+	public final Iterable<File> getJarFiles() {
+		return jarFiles;
 	}
 
 	@Override
-	public final Job<TaskResult, JobResult> addLibrary(File file) {
+	public final Job<TaskResult, JobResult> addJarFile(File file) {
 		checkNotNull("Library must not be null", file);
 		check("File not found " + file, file.exists());
 
-		libraries.add(file);
+		jarFiles.add(file);
 		return this;
 	}
 
 	@Override
-	public final Job<TaskResult, JobResult> addLibrary(Class<?> klass) {
+	public final Job<TaskResult, JobResult> addJarFile(Class<?> klass) {
 		checkNotNull("Class must not be null", klass);
 
 		URL resource = getClass().getResource('/' + klass.getName().replace('.', '/') + ".class");
@@ -53,7 +53,7 @@ public abstract class AbstractJob<TaskResult extends Serializable, JobResult> im
 
 		String file = resource.getFile().substring("file:".length());
 		String jarFilename = file.substring(0, file.indexOf('!'));
-		return addLibrary(new File(jarFilename));
+		return addJarFile(new File(jarFilename));
 	}
 
 }

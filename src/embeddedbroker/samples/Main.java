@@ -1,5 +1,6 @@
 package embeddedbroker.samples;
 
+import java.io.File;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -14,7 +15,9 @@ public class Main {
 		GridService service = new OurGridService();
 
 		BagOfTasks<BigInteger> bot = new BagOfTasks<BigInteger>();
-		bot.addTask(new PrimeSearch(new BigInteger("10000000000000000000000")));
+		bot
+		.addJarFile(new File("embedded-broker.jar"))
+		.addTask(new PrimeSearch(new BigInteger("10000000000000000000000")));
 
 		Future<List<BigInteger>> botResult = service.submit(bot);
 

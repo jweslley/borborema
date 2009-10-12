@@ -7,9 +7,9 @@ public interface Job<TaskResult extends Serializable, JobResult> extends Iterabl
 
 	Job<TaskResult, JobResult> addTask(Task<TaskResult> task);
 
-	Job<TaskResult, JobResult> addLibrary(File file);
+	Job<TaskResult, JobResult> addJarFile(File file);
 
-	Job<TaskResult, JobResult> addLibrary(Class<?> klass);
+	Job<TaskResult, JobResult> addJarFile(Class<?> klass);
 
 	//  Job<TaskResult, JobResult> addNativeLibrary(File file); // TODO
 
@@ -17,6 +17,6 @@ public interface Job<TaskResult extends Serializable, JobResult> extends Iterabl
 
 	//	Job<TaskResult, JobResult> addOutput(File output); // TODO
 
-	Iterable<File> getLibraries();
+	Iterable<File> getJarFiles();
 
 }

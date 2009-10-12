@@ -45,6 +45,8 @@ public class OurGridService implements GridService {
 
 	private static Logger logger = Logger.getLogger(OurGridService.class);
 
+	private static final int WAIT_TIME_INTERVAL = 200;
+
 	private final JobHandler jobHandler;
 	private final SerializationCodec codec;
 	private final BrokerAsyncApplicationClient client;
@@ -58,7 +60,7 @@ public class OurGridService implements GridService {
 			PropertiesFileParser properties = new PropertiesFileParser(configurationFilename);
 			ModuleContext context = new BrokerComponentContextFactory(properties).createContext();
 			client = new BrokerAsyncApplicationClient(context);
-			client.waitUpTime(200); // TODO magic number
+			client.waitUpTime(WAIT_TIME_INTERVAL);
 
 			jobHandler = new JobHandler();
 			client.getContainer().deploy(BrokerConstants.JOB_ENDED_INTERESTED, jobHandler);
@@ -92,7 +94,7 @@ public class OurGridService implements GridService {
 		Pair<JobSpec, List<File>> jobSpec = createJobSpec(job, requirements);
 		int jobId = client.addJob(jobSpec._1);
 		GridFuture<TaskResult, JobResult> future = new GridFuture<TaskResult, JobResult>(jobId);
-		jobHandler.addJobResult(future, jobSpec._2);
+		jobHandler.addJob(future, jobSpec._2);
 		client.notifyWhenJobIsFinished(jobId);
 		return future;
 	}
@@ -142,12 +144,10 @@ public class OurGridService implements GridService {
 		IOBlock initBlock = new IOBlock();
 		initBlock.putEntry(new IOEntry("put", input.getAbsolutePath(), input.getName()));
 
-		StringBuilder classpath = new StringBuilder(".:$STORAGE/embedded-broker.jar");
-		for (File library : job.getLibraries()) {
-			initBlock.putEntry(new IOEntry("store", library.getAbsolutePath(), library.getName()));
-			classpath
-			.append(System.getProperty("file.separator")) // TODO windows?! here be dragons!
-			.append(library.getName());
+		StringBuilder classpath = new StringBuilder(".");
+		for (File jarFile : job.getJarFiles()) {
+			initBlock.putEntry(new IOEntry("store", jarFile.getAbsolutePath(), jarFile.getName()));
+			classpath.append(":$STORAGE/").append(jarFile.getName());
 		}
 
 		String defaultOptions = Annotations.getJvmOptions(job, "");
@@ -182,8 +182,8 @@ public class OurGridService implements GridService {
 
 	private static class Pair<A, B> {
 
-		public A _1;
-		public B _2;
+		public final A _1;
+		public final B _2;
 
 		public Pair(A a, B b) {
 			this._1 = a;
@@ -216,26 +216,6 @@ public class OurGridService implements GridService {
 			compareAndSetState(0, RUNNING);
 		}
 
-		public boolean cancel(boolean mayInterruptIfRunning) {
-
-			for (;;) {
-				int s = getState();
-				if (finishedOrCancelled(s)) {
-					return false;
-				}
-				if (compareAndSetState(s, CANCELLED)) {
-					break;
-				}
-			}
-
-			if (mayInterruptIfRunning) {
-				client.cancelJob(jobId);
-			}
-
-			releaseShared(0);
-			return true;
-		}
-
 		public JobResult get() throws InterruptedException, ExecutionException {
 			acquireSharedInterruptibly(0);
 			if (getState() == CANCELLED) {
@@ -261,6 +241,26 @@ public class OurGridService implements GridService {
 			}
 
 			return result;
+		}
+
+		public boolean cancel(boolean mayInterruptIfRunning) {
+
+			for (;;) {
+				int s = getState();
+				if (finishedOrCancelled(s)) {
+					return false;
+				}
+				if (compareAndSetState(s, CANCELLED)) {
+					break;
+				}
+			}
+
+			if (mayInterruptIfRunning) {
+				client.cancelJob(jobId);
+			}
+
+			releaseShared(0);
+			return true;
 		}
 
 		private boolean finishedOrCancelled(int state) {
@@ -351,7 +351,7 @@ public class OurGridService implements GridService {
 
 		private final Map<Integer, Pair<GridFuture, List<File>>> jobs = new HashMap<Integer, Pair<GridFuture, List<File>>>();
 
-		public void addJobResult(GridFuture future, List<File> output) {
+		public void addJob(GridFuture future, List<File> output) {
 			jobs.put(future.jobId, new Pair<GridFuture, List<File>>(future, output));
 		}
 
@@ -363,43 +363,43 @@ public class OurGridService implements GridService {
 			return jobs.containsKey(jobId);
 		}
 
-		public Pair<GridFuture, List<File>> getJobResult(int jobId) {
-			Pair<GridFuture, List<File>> jobResult = jobs.get(jobId);
-			if (jobResult == null) {
+		public Pair<GridFuture, List<File>> getJob(int jobId) {
+			Pair<GridFuture, List<File>> job = jobs.get(jobId);
+			if (job == null) {
 				throw new GridServiceException("Job not found: " + jobId);
 			}
-			return jobResult;
+			return job;
 		}
 
 		@Override
 		public void jobEnded(int jobId, GridProcessState state) {
 			logger.info("Job [" + jobId + "] was " + state.name());
 
-			Pair<GridFuture, List<File>> jobResult = getJobResult(jobId);
+			Pair<GridFuture, List<File>> job = getJob(jobId);
 			if (state == GridProcessState.FINISHED) {
-				readAndSetResults(jobResult);
+				readAndSetResults(job);
 
 			} else if (state == GridProcessState.FAILED
 					|| state == GridProcessState.SABOTAGED) {
-				jobResult._1.setException(new GridServiceException(state.name()));
+				job._1.setException(new GridServiceException(state.name()));
 			}
 		}
 
-		private void readAndSetResults(Pair<GridFuture, List<File>> jobResult) {
+		private void readAndSetResults(Pair<GridFuture, List<File>> job) {
 
 			try {
 				List<Object> results = new ArrayList<Object>();
-				for (File result : jobResult._2) {
+				for (File result : job._2) {
 					results.add(codec.readObject(new FileInputStream(result)));
 				}
 
-				jobResult._1.setResult(results);
+				job._1.setResult(results);
 
 			} catch (FileNotFoundException e) {
-				jobResult._1.setException(e);
+				job._1.setException(e);
 
 			} catch (IOException e) {
-				jobResult._1.setException(e);
+				job._1.setException(e);
 			}
 		}
 
