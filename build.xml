@@ -1,6 +1,6 @@
 <project name="embedded-broker" basedir="." default="createjar">
 
-	<target name="createjar">
+  <target name="createjar">
 		<jar destfile="embedded-broker.jar" basedir="${basedir}/bin"/>
 	</target>
 
