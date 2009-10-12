@@ -1,5 +1,6 @@
 package embeddedbroker.samples;
 
+import java.math.BigInteger;
 import java.util.List;
 import java.util.concurrent.Future;
 
@@ -12,14 +13,16 @@ public class Main {
 	public static void main(final String[] args) throws Exception {
 		GridService service = new OurGridService();
 
-		BagOfTasks<Integer> bot = new BagOfTasks<Integer>();
-		bot.addTask(new SumTask(8, 10));
+		BagOfTasks<BigInteger> bot = new BagOfTasks<BigInteger>();
+		bot.addTask(new PrimeSearch(new BigInteger("25")));
+		bot.addTask(new PrimeSearch(new BigInteger("100")));
+		bot.addTask(new PrimeSearch(new BigInteger("1000")));
+		bot.addTask(new PrimeSearch(new BigInteger("10000000000000000000000")));
 
-		Future<List<Integer>> botResult = service.submit(bot);
+		Future<List<BigInteger>> botResult = service.submit(bot);
 
-		Thread.sleep(20000);
-		boolean cancel = botResult.cancel(true);
-		System.out.println("cancel: " + cancel);
+		List<BigInteger> list = botResult.get();
+		System.out.println("result: " + list);
 	}
 
 }

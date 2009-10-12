@@ -14,7 +14,7 @@ public class SumTask implements Task<Integer> {
 		this.b = b;
 	}
 
-	public final Integer execute() {
+	public Integer execute() {
 		return a + b;
 	}
 
