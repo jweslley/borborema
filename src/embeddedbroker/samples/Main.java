@@ -14,9 +14,6 @@ public class Main {
 		GridService service = new OurGridService();
 
 		BagOfTasks<BigInteger> bot = new BagOfTasks<BigInteger>();
-		bot.addTask(new PrimeSearch(new BigInteger("25")));
-		bot.addTask(new PrimeSearch(new BigInteger("100")));
-		bot.addTask(new PrimeSearch(new BigInteger("1000")));
 		bot.addTask(new PrimeSearch(new BigInteger("10000000000000000000000")));
 
 		Future<List<BigInteger>> botResult = service.submit(bot);
