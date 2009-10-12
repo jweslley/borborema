@@ -1,0 +1,8 @@
+bin/
+logs/
+.settings/
+.project
+.classpath
+broker.properties
+embedded-broker.jar
+
