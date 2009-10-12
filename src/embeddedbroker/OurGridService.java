@@ -94,7 +94,7 @@ public class OurGridService implements GridService {
 		Pair<JobSpec, List<File>> jobSpec = createJobSpec(job, requirements);
 		int jobId = client.addJob(jobSpec._1);
 		GridFuture<TaskResult, JobResult> future = new GridFuture<TaskResult, JobResult>(jobId);
-		jobHandler.addJob(future, jobSpec._2);
+		jobHandler.addJob(job, future, jobSpec._2);
 		client.notifyWhenJobIsFinished(jobId);
 		return future;
 	}
@@ -189,7 +189,16 @@ public class OurGridService implements GridService {
 			this._1 = a;
 			this._2 = b;
 		}
+	}
 
+	private static class Triple<A, B, C> extends Pair<A, B> {
+
+		public final C _3;
+
+		public Triple(A a, B b, C c) {
+			super(a, b);
+			this._3 = c;
+		}
 	}
 
 	private class GridFuture<TaskResult extends Serializable, JobResult>
@@ -349,10 +358,11 @@ public class OurGridService implements GridService {
 	@SuppressWarnings("unchecked")
 	public final class JobHandler implements JobEndedInterested {
 
-		private final Map<Integer, Pair<GridFuture, List<File>>> jobs = new HashMap<Integer, Pair<GridFuture, List<File>>>();
+		private final Map<Integer, Triple<Job, GridFuture, List<File>>> jobs =
+			new HashMap<Integer, Triple<Job, GridFuture, List<File>>>();
 
-		public void addJob(GridFuture future, List<File> output) {
-			jobs.put(future.jobId, new Pair<GridFuture, List<File>>(future, output));
+		public void addJob(Job job, GridFuture future, List<File> output) {
+			jobs.put(future.jobId, new Triple<Job, GridFuture, List<File>>(job, future, output));
 		}
 
 		public void removeJob(int jobId) {
@@ -363,8 +373,8 @@ public class OurGridService implements GridService {
 			return jobs.containsKey(jobId);
 		}
 
-		public Pair<GridFuture, List<File>> getJob(int jobId) {
-			Pair<GridFuture, List<File>> job = jobs.get(jobId);
+		public Triple<Job, GridFuture, List<File>> getJob(int jobId) {
+			Triple<Job, GridFuture, List<File>> job = jobs.get(jobId);
 			if (job == null) {
 				throw new GridServiceException("Job not found: " + jobId);
 			}
@@ -375,32 +385,50 @@ public class OurGridService implements GridService {
 		public void jobEnded(int jobId, GridProcessState state) {
 			logger.info("Job [" + jobId + "] was " + state.name());
 
-			Pair<GridFuture, List<File>> job = getJob(jobId);
+			Triple<Job, GridFuture, List<File>> job = getJob(jobId);
 			if (state == GridProcessState.FINISHED) {
 				readAndSetResults(job);
 
 			} else if (state == GridProcessState.FAILED
 					|| state == GridProcessState.SABOTAGED) {
-				job._1.setException(new GridServiceException(state.name()));
+				job._2.setException(new GridServiceException(state.name()));
 			}
 		}
 
-		private void readAndSetResults(Pair<GridFuture, List<File>> job) {
+		private void readAndSetResults(Triple<Job, GridFuture, List<File>> job) {
 
 			try {
 				List<Object> results = new ArrayList<Object>();
-				for (File result : job._2) {
+				for (File result : job._3) {
 					results.add(codec.readObject(new FileInputStream(result)));
 				}
 
-				job._1.setResult(results);
+				job._2.setResult(reduceOrGet(job._1, results));
+
+			} catch (RuntimeException e) {
+				job._2.setException(e);
 
 			} catch (FileNotFoundException e) {
-				job._1.setException(e);
+				job._2.setException(e);
 
 			} catch (IOException e) {
-				job._1.setException(e);
+				job._2.setException(e);
 			}
+		}
+
+		private Object reduceOrGet(Job job, List<Object> intermediateResults) {
+
+			if (job instanceof MapReduceJob) {
+				try {
+					// TODO execute in main thread?!
+					return ((MapReduceJob) job).reduce(intermediateResults);
+
+				} catch (Exception e) {
+					throw new RuntimeException("An error occurred during reduce phase", e);
+				}
+			}
+
+			return intermediateResults;
 		}
 
 		@Override
