@@ -19,7 +19,7 @@
 		h1 { font-size: 2.5em; font-family: georgia, serif; color: #3b6edd; margin-bottom: 3px; }
 		h1 .small { font-size: 0.4em; }
 		h1 a { text-decoration: none }
-		h2 { font-size: 1.5em; font-family: georgia, serif; color: #3b6edd; }
+		h2 { font-size: 1.5em; font-family: georgia, serif; color: #3b6edd; border-bottom: 1px dotted #aaa; }
     h3 { text-align: center; color: #3b6edd; }
     a { color: #3b6edd; }
     .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
@@ -52,6 +52,37 @@
     <div class="description">
       A embeddable OurGrid broker
     </div>
+
+    <h2>Features</h2>
+    <p>Intuitive</p>
+    {% highlight java %}
+public class Main {
+
+  public static void main(final String[] args) throws Exception {
+    GridService service = new OurGridService();
+
+    BagOfTasks<BigInteger> bot = new BagOfTasks<BigInteger>();
+    bot
+    .addJarFile(new File("embedded-broker.jar"))
+    .addTask(new PrimeSearch(new BigInteger("10000000000000000000000")))
+    .addTask(new PrimeSearch(new BigInteger("9000000000000000000000000")));
+
+    Future<List<BigInteger>> botResult = service.submit(bot);
+
+    List<BigInteger> list = botResult.get();
+    System.out.println("result: " + list);
+  }
+
+}
+    {% endhighlight %}
+
+
+    <p>Easy to use</p>
+    <pre>
+    
+    </pre>
+
+
 
     <h2>Download</h2>
     <p>
