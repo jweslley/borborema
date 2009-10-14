@@ -1,9 +1,3 @@
-bin/
-logs/
 _site/
 .settings/
-.project
-.classpath
-broker.properties
-embedded-broker.jar
 
