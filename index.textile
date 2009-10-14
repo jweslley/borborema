@@ -1,0 +1,166 @@
+---
+title: jweslley/embedded-broker @ GitHub
+---
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title>jweslley/embedded-broker @ GitHub</title>
+	<link rel="stylesheet" href="/syntax.css"  type="text/css" media="screen"/>	
+	<link rel="stylesheet" href="/site.css"  type="text/css" media="screen"/>	
+</head>
+
+<body>
+  <a href="http://github.com/jweslley/embedded-broker"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" />
+  </a>
+  
+  <div id="container">
+
+    <div class="download">
+      <a href="http://github.com/jweslley/embedded-broker/zipball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
+      <a href="http://github.com/jweslley/embedded-broker/tarball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+    </div>
+      
+    <h1><a href="http://github.com/jweslley/embedded-broker">embedded-broker</a></h1>
+
+    <div class="description">
+      A embeddable OurGrid broker
+    </div>
+
+h2. How to use
+
+Step 1 - Creating a task
+
+{% highlight java %}
+public class PrimeSearch implements Task<BigInteger> {
+
+  private final BigInteger seed;
+ 
+  public PrimeSearch(BigInteger seed) {
+   this.seed = seed;
+  }
+
+  public BigInteger execute() {
+    return seed.nextProbablePrime();
+  }
+}
+{% endhighlight %} 
+
+Step 2 - Running...
+
+{% highlight java %}
+public class Main {
+ 
+  public static void main(final String[] args) throws Exception {
+    GridService service = new OurGridService();   // creates a grid service
+ 
+    BagOfTasks<BigInteger> bot = new BagOfTasks<BigInteger>(); // creates a Bag of Tasks job
+    bot
+    .addJarFile(new File("embedded-broker.jar"))   // adds the required jar(s)
+    .addTask(new PrimeSearch(new BigInteger("100000000000000000000"))) // add the tasks
+    .addTask(new PrimeSearch(new BigInteger("999989889384728347478"))); // How many tasks do you need?
+     
+    Future<List<BigInteger>> result = service.submit(bot); // submitting the job to the grid
+     
+    List<BigInteger> primes = result.get(); // the get method waits for the computation to complete
+    System.out.println("results: " + primes);
+  }
+}
+{% endhighlight %}
+
+h2. Features
+
+Using annotations to configure Jobs and Tasks
+
+{% highlight java %}
+/**
+ * The JvmOptions annotation specifies the JVM parameters to run the task
+ */
+@JvmOptions("-server")
+public class PrimeSearch implements Task<BigInteger> {
+...
+{% endhighlight %} 
+
+{% highlight java %}
+/**
+ * Declaring the JvmOptions annotation in a Job's subclass,
+ * all tasks of this job will be executed using the specified JVM options.
+ */
+@JvmOptions("-server -Xmx4096 -Xms4096")
+public class MyJob extends BagOfTasks {
+...
+{% endhighlight %} 
+
+{% highlight java %}
+/**
+ * The Requirements annotation describes the requirements that need to be fulfilled
+ * by a worker node, so that it can be selected to run tasks of the job.
+ */
+@Requirements("os == linux and mem >= 100") // 
+public class MyJob extends BagOfTasks {
+...
+{% endhighlight %} 
+
+Running MapReduce-like jobs
+
+{% highlight java %}
+public class SumPrimeNumbers extends MapReduceJob<BigInteger, BigInteger> {
+
+  public BigInteger reduce(List<BigInteger> intermediateResults) {
+    BigInteger sum = new BigInteger("0");
+    for (BigInteger value : intermediateResults) {
+    sum = sum.add(value);
+    }
+    return sum;
+  }
+   
+  public static void main(final String[] args) throws Exception {
+    GridService service = new OurGridService();
+     
+    SumPrimeNumbers job = new SumPrimeNumbers();
+    job
+    .addJarFile(new File("embedded-broker.jar"))
+    .addTask(new PrimeSearch(new BigInteger("10000000")))
+    .addTask(new PrimeSearch(new BigInteger("200000000000")))
+    .addTask(new PrimeSearch(new BigInteger("300000000000000000")))
+    .addTask(new PrimeSearch(new BigInteger("40000000000000000000000")));
+
+    Future<BigInteger> result = service.submit(job);
+
+    BigInteger sum = result.get();
+    System.out.println("result: " + sum);
+  }
+}
+{% endhighlight %}
+
+See also the future <a href="http://github.com/jweslley/embedded-broker/issues">features</a>.
+
+h2. Limitations
+
+The current version doesn't support file processing, but this issue will be implemented soon.
+
+h2. Download
+
+You can download this project in either <a href="http://github.com/jweslley/embedded-broker/zipball/master">zip</a> or <a href="http://github.com/jweslley/embedded-broker/tarball/master">tar</a> formats.
+    
+You can also clone the project with <a href="http://git-scm.com">Git</a> by running:
+<pre>$ git clone git://github.com/jweslley/embedded-broker</pre>
+
+<div class="footer">
+  get the source code on GitHub : <a href="http://github.com/jweslley/embedded-broker">jweslley/embedded-broker</a>
+</div>
+    
+  </div>
+
+  <script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11070753-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+</body>
+</html>

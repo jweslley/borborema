@@ -1,0 +1,194 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+	<title>jweslley/embedded-broker @ GitHub</title>
+	<link rel="stylesheet" href="http://github.com/jweslley/embedded-broker/raw/gh-pages/syntax.css"  type="text/css" media="screen"/>	
+
+	<style type="text/css">
+		body {
+  		margin-top: 1.0em;
+		  font-family: "Helvetica,Arial,FreeSans"; 
+    }
+    #container {
+      margin: 0 auto;
+      width: 700px;
+    }
+		h1 { font-size: 2.5em; font-family: georgia, serif; color: #3b6edd; margin-bottom: 3px; }
+		h1 .small { font-size: 0.4em; }
+		h1 a { text-decoration: none }
+		h2 { font-size: 1.5em; font-family: georgia, serif; color: #3b6edd; border-bottom: 1px dotted #aaa; }
+    h3 { text-align: center; color: #3b6edd; }
+    a { color: #3b6edd; }
+    .description { font-size: 1.2em; margin-bottom: 30px; margin-top: 30px; font-style: italic;}
+    .download { float: right; }
+		pre { background: #000; color: #fff; padding: 15px;}
+    hr { border: 0; width: 80%; border-bottom: 1px solid #aaa}
+    .footer { text-align:center; padding-top:30px; font-style: italic; }
+	</style>
+	
+</head>
+
+<body>
+  <a href="http://github.com/jweslley/embedded-broker">
+    <img 
+       style="position: absolute; top: 0; right: 0; border: 0;" 
+       src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" />
+  </a>
+  
+  <div id="container">
+
+    <div class="download">
+      <a href="http://github.com/jweslley/embedded-broker/zipball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
+      <a href="http://github.com/jweslley/embedded-broker/tarball/master">
+        <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
+    </div>
+      
+    <h1><a href="http://github.com/jweslley/embedded-broker">embedded-broker</a></h1>
+
+    <div class="description">
+      A embeddable OurGrid broker
+    </div>
+
+<h2>How to use</h2>
+<p>Step 1 - Creating a task</p>
+
+<div class="highlight"><pre><span class="k">public</span> <span class="k">class</span> <span class="nc">PrimeSearch</span> <span class="k">implements</span> <span class="n">Task</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">&gt;</span> <span class="o">{</span>
+
+  <span class="k">private</span> <span class="k">final</span> <span class="n">BigInteger</span> <span class="n">seed</span><span class="o">;</span>
+ 
+  <span class="k">public</span> <span class="nf">PrimeSearch</span><span class="o">(</span><span class="n">BigInteger</span> <span class="n">seed</span><span class="o">)</span> <span class="o">{</span>
+   <span class="k">this</span><span class="o">.</span><span class="na">seed</span> <span class="o">=</span> <span class="n">seed</span><span class="o">;</span>
+  <span class="o">}</span>
+
+  <span class="k">public</span> <span class="n">BigInteger</span> <span class="nf">execute</span><span class="o">()</span> <span class="o">{</span>
+    <span class="k">return</span> <span class="n">seed</span><span class="o">.</span><span class="na">nextProbablePrime</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre>
+</div> 
+
+<p>Step 2 - Running...</p>
+
+<div class="highlight"><pre><span class="k">public</span> <span class="k">class</span> <span class="nc">Main</span> <span class="o">{</span>
+ 
+  <span class="k">public</span> <span class="k">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="k">final</span> <span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="k">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">GridService</span> <span class="n">service</span> <span class="o">=</span> <span class="k">new</span> <span class="n">OurGridService</span><span class="o">();</span>   <span class="c">// creates a grid service</span>
+ 
+    <span class="n">BagOfTasks</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">&gt;</span> <span class="n">bot</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BagOfTasks</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">&gt;();</span> <span class="c">// creates a Bag of Tasks job</span>
+    <span class="n">bot</span>
+    <span class="o">.</span><span class="na">addJarFile</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;embedded-broker.jar&quot;</span><span class="o">))</span>   <span class="c">// adds the required jar(s)</span>
+    <span class="o">.</span><span class="na">addTask</span><span class="o">(</span><span class="k">new</span> <span class="n">PrimeSearch</span><span class="o">(</span><span class="k">new</span> <span class="n">BigInteger</span><span class="o">(</span><span class="s">&quot;100000000000000000000&quot;</span><span class="o">)))</span> <span class="c">// add the tasks</span>
+    <span class="o">.</span><span class="na">addTask</span><span class="o">(</span><span class="k">new</span> <span class="n">PrimeSearch</span><span class="o">(</span><span class="k">new</span> <span class="n">BigInteger</span><span class="o">(</span><span class="s">&quot;999989889384728347478&quot;</span><span class="o">)));</span> <span class="c">// How many tasks do you need?</span>
+     
+    <span class="n">Future</span><span class="o">&lt;</span><span class="n">List</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">&gt;&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">bot</span><span class="o">);</span> <span class="c">// submitting the job to the grid</span>
+     
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">&gt;</span> <span class="n">primes</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">get</span><span class="o">();</span> <span class="c">// the get method waits for the computation to complete</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;results: &quot;</span> <span class="o">+</span> <span class="n">primes</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre>
+</div>
+
+<h2>Features</h2>
+
+<p>Using annotations to configure Jobs and Tasks</p>
+
+<div class="highlight"><pre><span class="c">/**</span>
+<span class="c"> * The JvmOptions annotation specifies the JVM parameters to run the task</span>
+<span class="c"> */</span>
+<span class="nd">@JvmOptions</span><span class="o">(</span><span class="s">&quot;-server&quot;</span><span class="o">)</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">PrimeSearch</span> <span class="k">implements</span> <span class="n">Task</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">&gt;</span> <span class="o">{</span>
+<span class="o">...</span>
+</pre>
+</div> 
+
+<div class="highlight"><pre><span class="c">/**</span>
+<span class="c"> * Declaring the JvmOptions annotation in a Job&#39;s subclass,</span>
+<span class="c"> * all tasks of this job will be executed using the specified JVM options.</span>
+<span class="c"> */</span>
+<span class="nd">@JvmOptions</span><span class="o">(</span><span class="s">&quot;-server -Xmx4096 -Xms4096&quot;</span><span class="o">)</span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">MyJob</span> <span class="k">extends</span> <span class="n">BagOfTasks</span> <span class="o">{</span>
+<span class="o">...</span>
+</pre>
+</div> 
+
+<div class="highlight"><pre><span class="c">/**</span>
+<span class="c"> * The Requirements annotation describes the requirements that need to be fulfilled</span>
+<span class="c"> * by a worker node, so that it can be selected to run tasks of the job.</span>
+<span class="c"> */</span>
+<span class="nd">@Requirements</span><span class="o">(</span><span class="s">&quot;os == linux and mem &gt;= 100&quot;</span><span class="o">)</span> <span class="c">// </span>
+<span class="k">public</span> <span class="k">class</span> <span class="nc">MyJob</span> <span class="k">extends</span> <span class="n">BagOfTasks</span> <span class="o">{</span>
+<span class="o">...</span>
+</pre>
+</div> 
+
+<p>Running MapReduce-like jobs</p>
+<div class="highlight"><pre><span class="k">public</span> <span class="k">class</span> <span class="nc">SumPrimeNumbers</span> <span class="k">extends</span> <span class="n">MapReduceJob</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">,</span> <span class="n">BigInteger</span><span class="o">&gt;</span> <span class="o">{</span>
+
+  <span class="k">public</span> <span class="n">BigInteger</span> <span class="nf">reduce</span><span class="o">(</span><span class="n">List</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">&gt;</span> <span class="n">intermediateResults</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">BigInteger</span> <span class="n">sum</span> <span class="o">=</span> <span class="k">new</span> <span class="n">BigInteger</span><span class="o">(</span><span class="s">&quot;0&quot;</span><span class="o">);</span>
+    <span class="k">for</span> <span class="o">(</span><span class="n">BigInteger</span> <span class="n">value</span> <span class="o">:</span> <span class="n">intermediateResults</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">sum</span> <span class="o">=</span> <span class="n">sum</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="n">value</span><span class="o">);</span>
+    <span class="o">}</span>
+    <span class="k">return</span> <span class="n">sum</span><span class="o">;</span>
+  <span class="o">}</span>
+   
+  <span class="k">public</span> <span class="k">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="k">final</span> <span class="n">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="k">throws</span> <span class="n">Exception</span> <span class="o">{</span>
+    <span class="n">GridService</span> <span class="n">service</span> <span class="o">=</span> <span class="k">new</span> <span class="n">OurGridService</span><span class="o">();</span>
+     
+    <span class="n">SumPrimeNumbers</span> <span class="n">job</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SumPrimeNumbers</span><span class="o">();</span>
+    <span class="n">job</span>
+    <span class="o">.</span><span class="na">addJarFile</span><span class="o">(</span><span class="k">new</span> <span class="n">File</span><span class="o">(</span><span class="s">&quot;embedded-broker.jar&quot;</span><span class="o">))</span>
+    <span class="o">.</span><span class="na">addTask</span><span class="o">(</span><span class="k">new</span> <span class="n">PrimeSearch</span><span class="o">(</span><span class="k">new</span> <span class="n">BigInteger</span><span class="o">(</span><span class="s">&quot;10000000&quot;</span><span class="o">)))</span>
+    <span class="o">.</span><span class="na">addTask</span><span class="o">(</span><span class="k">new</span> <span class="n">PrimeSearch</span><span class="o">(</span><span class="k">new</span> <span class="n">BigInteger</span><span class="o">(</span><span class="s">&quot;200000000000&quot;</span><span class="o">)))</span>
+    <span class="o">.</span><span class="na">addTask</span><span class="o">(</span><span class="k">new</span> <span class="n">PrimeSearch</span><span class="o">(</span><span class="k">new</span> <span class="n">BigInteger</span><span class="o">(</span><span class="s">&quot;300000000000000000&quot;</span><span class="o">)))</span>
+    <span class="o">.</span><span class="na">addTask</span><span class="o">(</span><span class="k">new</span> <span class="n">PrimeSearch</span><span class="o">(</span><span class="k">new</span> <span class="n">BigInteger</span><span class="o">(</span><span class="s">&quot;40000000000000000000000&quot;</span><span class="o">)));</span>
+
+    <span class="n">Future</span><span class="o">&lt;</span><span class="n">BigInteger</span><span class="o">&gt;</span> <span class="n">result</span> <span class="o">=</span> <span class="n">service</span><span class="o">.</span><span class="na">submit</span><span class="o">(</span><span class="n">job</span><span class="o">);</span>
+
+    <span class="n">BigInteger</span> <span class="n">sum</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="na">get</span><span class="o">();</span>
+    <span class="n">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="s">&quot;result: &quot;</span> <span class="o">+</span> <span class="n">sum</span><span class="o">);</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</pre>
+</div>
+
+<p>See also the future <a href="http://github.com/jweslley/embedded-broker/issues">features</a>.</p>
+
+<h2>Limitations</h2>
+<p>The current version doesn't support file processing, but this issue will be implemented soon.</p>
+
+    <h2>Download</h2>
+    <p>
+      You can download this project in either
+      <a href="http://github.com/jweslley/embedded-broker/zipball/master">zip</a> or
+      <a href="http://github.com/jweslley/embedded-broker/tarball/master">tar</a> formats.
+    </p>
+    <p>You can also clone the project with <a href="http://git-scm.com">Git</a>
+      by running:
+      <pre>$ git clone git://github.com/jweslley/embedded-broker</pre>
+    </p>
+      
+    <div class="footer">
+      get the source code on GitHub : <a href="http://github.com/jweslley/embedded-broker">jweslley/embedded-broker</a>
+    </div>
+    
+  </div>
+
+  <script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11070753-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+</body>
+</html>
