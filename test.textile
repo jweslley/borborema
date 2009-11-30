@@ -1,33 +1,33 @@
 ---
-title: jweslley/embedded-broker @ GitHub
+title: jweslley/borborema @ GitHub
 ---
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-	<title>jweslley/embedded-broker @ GitHub</title>
-	<link rel="stylesheet" href="http://jweslley.github.com/embedded-broker/css/syntax.css"  type="text/css" media="screen"/>	
-	<link rel="stylesheet" href="http://jweslley.github.com/embedded-broker/css/site.css"  type="text/css" media="screen"/>	
+	<title>jweslley/borborema @ GitHub</title>
+	<link rel="stylesheet" href="http://jweslley.github.com/borborema/css/syntax.css"  type="text/css" media="screen"/>	
+	<link rel="stylesheet" href="http://jweslley.github.com/borborema/css/site.css"  type="text/css" media="screen"/>	
 </head>
 
 <body>
-  <a href="http://github.com/jweslley/embedded-broker"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" />
+  <a href="http://github.com/jweslley/borborema"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" />
   </a>
   
   <div id="container">
 
     <div class="download">
-      <a href="http://github.com/jweslley/embedded-broker/zipball/master">
+      <a href="http://github.com/jweslley/borborema/zipball/master">
         <img border="0" width="90" src="http://github.com/images/modules/download/zip.png"></a>
-      <a href="http://github.com/jweslley/embedded-broker/tarball/master">
+      <a href="http://github.com/jweslley/borborema/tarball/master">
         <img border="0" width="90" src="http://github.com/images/modules/download/tar.png"></a>
     </div>
       
-    <h1><a href="http://github.com/jweslley/embedded-broker">embedded-broker</a></h1>
+    <h1><a href="http://github.com/jweslley/borborema">borborema</a></h1>
 
     <div class="description">
-      A embeddable OurGrid broker
+         A simple Java API to submit jobs to the OurGrid infrastructure.
     </div>
 
 h2. How to use
@@ -59,7 +59,7 @@ public class Main {
  
     BagOfTasks<BigInteger> bot = new BagOfTasks<BigInteger>(); // creates a Bag of Tasks job
     bot
-    .addJarFile(new File("embedded-broker.jar"))   // adds the required jar(s)
+    .addJarFile(new File("borborema.jar"))   // adds the required jar(s)
     .addTask(new PrimeSearch(new BigInteger("100000000000000000000"))) // add the tasks
     .addTask(new PrimeSearch(new BigInteger("999989889384728347478"))); // How many tasks do you need?
      
@@ -122,7 +122,7 @@ public class SumPrimeNumbers extends MapReduceJob<BigInteger, BigInteger> {
      
     SumPrimeNumbers job = new SumPrimeNumbers();
     job
-    .addJarFile(new File("embedded-broker.jar"))
+    .addJarFile(new File("borborema.jar"))
     .addTask(new PrimeSearch(new BigInteger("10000000")))
     .addTask(new PrimeSearch(new BigInteger("200000000000")))
     .addTask(new PrimeSearch(new BigInteger("300000000000000000")))
@@ -136,7 +136,7 @@ public class SumPrimeNumbers extends MapReduceJob<BigInteger, BigInteger> {
 }
 {% endhighlight %}
 
-See also the future <a href="http://github.com/jweslley/embedded-broker/issues">features</a>.
+See also the future <a href="http://github.com/jweslley/borborema/issues">features</a>.
 
 h2. Limitations
 
@@ -144,13 +144,13 @@ The current version doesn't support file processing, but this issue will be impl
 
 h2. Download
 
-You can download this project in either <a href="http://github.com/jweslley/embedded-broker/zipball/master">zip</a> or <a href="http://github.com/jweslley/embedded-broker/tarball/master">tar</a> formats.
+You can download this project in either <a href="http://github.com/jweslley/borborema/zipball/master">zip</a> or <a href="http://github.com/jweslley/borborema/tarball/master">tar</a> formats.
     
 You can also clone the project with <a href="http://git-scm.com">Git</a> by running:
-<pre>$ git clone git://github.com/jweslley/embedded-broker</pre>
+<pre>$ git clone git://github.com/jweslley/borborema</pre>
 
 <div class="footer">
-  get the source code on GitHub : <a href="http://github.com/jweslley/embedded-broker">jweslley/embedded-broker</a>
+  get the source code on GitHub : <a href="http://github.com/jweslley/borborema">jweslley/borborema</a>
 </div>
     
   </div>
