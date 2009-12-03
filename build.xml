@@ -1,7 +1,7 @@
-<project name="embedded-broker" basedir="." default="createjar">
+<project name="borborema" basedir="." default="createjar">
 
   <target name="createjar">
-		<jar destfile="embedded-broker.jar" basedir="${basedir}/bin"/>
+		<jar destfile="borborema.jar" basedir="${basedir}/bin"/>
 	</target>
 
 </project>

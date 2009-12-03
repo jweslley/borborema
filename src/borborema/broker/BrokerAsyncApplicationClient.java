@@ -18,7 +18,7 @@ public final class BrokerAsyncApplicationClient extends AsyncApplicationClient<B
 	private boolean isBrokerUp;
 
 	public BrokerAsyncApplicationClient(ModuleContext context) throws CommuneNetworkException, ProcessorStartException {
-		super("EMBEDDEDBROKER_CLIENT", context);
+		super("BORBOREMA_CLIENT", context);
 	}
 
 	@Override

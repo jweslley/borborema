@@ -4,4 +4,4 @@ logs/
 .project
 .classpath
 broker.properties
-embedded-broker.jar
+borborema.jar

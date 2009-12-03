@@ -25,7 +25,7 @@ public class SumPrimeNumbers extends MapReduceJob<BigInteger, BigInteger> {
 
 		SumPrimeNumbers job = new SumPrimeNumbers();
 		job
-		.addJarFile(new File("embedded-broker.jar"))
+		.addJarFile(new File("borborema.jar"))
 		.addTask(new PrimeSearch(new BigInteger("10000000")))
 		.addTask(new PrimeSearch(new BigInteger("200000000000")))
 		.addTask(new PrimeSearch(new BigInteger("300000000000000000")))

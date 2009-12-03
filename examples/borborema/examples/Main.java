@@ -16,7 +16,7 @@ public class Main {
 
 		BagOfTasks<BigInteger> bot = new BagOfTasks<BigInteger>();
 		bot
-		.addJarFile(new File("embedded-broker.jar"))
+		.addJarFile(new File("borborema.jar"))
 		.addTask(new PrimeSearch(new BigInteger("10000000000000000000000")));
 
 		Future<List<BigInteger>> botResult = service.submit(bot);
