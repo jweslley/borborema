@@ -11,7 +11,6 @@ import borborema.JvmOptions;
 import borborema.Requirements;
 import borborema.Task;
 
-
 public class Annotations {
 
 	public static String getRequirements(Object source) {
@@ -24,20 +23,22 @@ public class Annotations {
 		return (opts != null) ? opts.value() : defaultValue;
 	}
 
-	public static Map<File, Input.TransferCommand> getFilesFrom(Task<?> task) throws Exception {
-		Map<File, Input.TransferCommand> files = new HashMap<File, Input.TransferCommand>();
+	public static Map<Field, File> getFilesFrom(Task<?> task)
+		throws IllegalAccessException, FileNotFoundException {
+
+		Map<Field, File> files = new HashMap<Field, File>();
 
 		Field[] fields = task.getClass().getDeclaredFields();
 		for (Field field : fields) {
 			Input input = field.getAnnotation(Input.class);
-			if (input == null || !field.getType().equals(File.class)) {
+			if ((input == null) || !field.getType().equals(File.class)) {
 				continue;
 			}
 
 			field.setAccessible(true);
 			File file = (File) field.get(task);
-			if (file != null && file.exists()) {
-				files.put(file, input.value());
+			if ((file != null) && file.exists()) {
+				files.put(field, file);
 
 			} else if (input.required()) {
 				throw new FileNotFoundException();

@@ -23,6 +23,8 @@ public class Main {
 
 		List<BigInteger> list = botResult.get();
 		System.out.println("result: " + list);
+
+		service.shutdown();
 	}
 
 }

@@ -6,11 +6,14 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.Map.Entry;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -132,17 +135,13 @@ public class OurGridService implements GridService {
 	private <JobResult, TaskResult extends Serializable>
 	Pair<TaskSpec, File> createTaskSpec(Job<TaskResult, JobResult> job, Task<TaskResult> task) throws GridServiceException {
 
-		File input = createTempFile();
-		File output = createTempFile();
+		File taskFile = createTempFile(".task");
+		File taskResult = createTempFile(".task");
 
-		try {
-			codec.writeObject(task, new FileOutputStream(input));
-		} catch (IOException e) {
-			throw new GridServiceException("Could not write in temporary file.", e);
-		}
+		List<Pair<File, File>> inputFiles = serializeTask(task, taskFile);
 
 		IOBlock initBlock = new IOBlock();
-		initBlock.putEntry(new IOEntry("put", input.getAbsolutePath(), input.getName()));
+		initBlock.putEntry(new IOEntry("put", taskFile.getAbsolutePath(), taskFile.getName()));
 
 		StringBuilder classpath = new StringBuilder(".");
 		for (File jarFile : job.getJarFiles()) {
@@ -150,30 +149,70 @@ public class OurGridService implements GridService {
 			classpath.append(":$STORAGE/").append(jarFile.getName());
 		}
 
+		for (Pair<File, File> input : inputFiles) {
+			initBlock.putEntry(new IOEntry("put", input._1.getAbsolutePath(), input._2.getName()));
+		}
+
 		String defaultOptions = Annotations.getJvmOptions(job, "");
 		String jvmOptions = Annotations.getJvmOptions(task, defaultOptions);
-
-		/*for (File resource : resourceList) {
-			initBlock.putEntry(new IOEntry("put", resource.getAbsolutePath(), resource.getName()));
-		} createJarList()*/
-
 		String remoteCommand = "java " + jvmOptions + " -cp " + classpath.toString()
-		+ " " + TaskRunner.class.getName() + " " + input.getName() + " " + output.getName();
+		+ " " + TaskRunner.class.getName() + " " + taskFile.getName() + " " + taskResult.getName();
 
 		IOBlock finalBlock = new IOBlock();
-		finalBlock.putEntry(new IOEntry("get", output.getName(), output.getAbsolutePath()));
+		finalBlock.putEntry(new IOEntry("get", taskResult.getName(), taskResult.getAbsolutePath()));
 
 		try {
-			return new Pair<TaskSpec, File>(new TaskSpec(initBlock, remoteCommand, finalBlock, null), output);
+			return new Pair<TaskSpec, File>(new TaskSpec(initBlock, remoteCommand, finalBlock, null), taskResult);
 
 		} catch (TaskSpecificationException e) {
 			throw new GridServiceException("Could not create task specification.", e);
 		}
 	}
 
-	private File createTempFile() throws GridServiceException {
+	private List<Pair<File, File>> serializeTask(Task<?> task, File taskFile) {
+
 		try {
-			return File.createTempFile(UUID.randomUUID().toString(), ".task");
+			List<Pair<File, File>> result = new ArrayList<Pair<File, File>>();
+			Map<Field, File> localFiles = Annotations.getFilesFrom(task);
+			Map<Field, File> remoteFiles = createRemoteFiles(localFiles, result);
+
+			setFiles(task, remoteFiles);
+			codec.writeObject(task, new FileOutputStream(taskFile));
+			setFiles(task, localFiles);
+			return result;
+
+		} catch (IllegalAccessException e) {
+			throw new GridServiceException("Reflection error. Check the SecurityManager.", e);
+
+		} catch (FileNotFoundException e) {
+			throw new GridServiceException("Input file is required.", e);
+
+		} catch (IOException e) {
+			throw new GridServiceException("Could not write in temporary file.", e);
+		}
+	}
+
+	private Map<Field, File> createRemoteFiles(Map<Field, File> localFiles, List<Pair<File, File>> callback) {
+		Set<Entry<Field, File>> fileSet = localFiles.entrySet();
+		Map<Field, File> remoteFiles = new HashMap<Field, File>();
+		for (Entry<Field, File> entry : fileSet) {
+			File remoteFile = new File(UUID.randomUUID().toString() + ".input");
+			remoteFiles.put(entry.getKey(), remoteFile);
+			callback.add(new Pair<File, File>(entry.getValue(), remoteFile));
+		}
+		return remoteFiles;
+	}
+
+	private void setFiles(Task<?> task, Map<Field, File> files) throws IllegalAccessException {
+		Set<Entry<Field, File>> entrySet = files.entrySet();
+		for (Entry<Field, File> entry : entrySet) {
+			entry.getKey().set(task, entry.getValue());
+		}
+	}
+
+	private File createTempFile(String suffix) throws GridServiceException {
+		try {
+			return File.createTempFile(UUID.randomUUID().toString(), suffix);
 
 		} catch (IOException e) {
 			throw new GridServiceException("Could not create temp file!", e);
@@ -389,8 +428,8 @@ public class OurGridService implements GridService {
 			if (state == GridProcessState.FINISHED) {
 				readAndSetResults(job);
 
-			} else if (state == GridProcessState.FAILED
-					|| state == GridProcessState.SABOTAGED) {
+			} else if ((state == GridProcessState.FAILED)
+					|| (state == GridProcessState.SABOTAGED)) {
 				job._2.setException(new GridServiceException(state.name()));
 			}
 		}

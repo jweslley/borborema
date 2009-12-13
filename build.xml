@@ -1,7 +1,7 @@
 <project name="borborema" basedir="." default="createjar">
 
   <target name="createjar">
-		<jar destfile="borborema.jar" basedir="${basedir}/bin"/>
-	</target>
+    <jar destfile="borborema.jar" basedir="${basedir}/bin"/>
+  </target>
 
 </project>

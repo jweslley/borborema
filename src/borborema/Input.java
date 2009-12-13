@@ -13,8 +13,4 @@ public @interface Input {
 
 	boolean required() default true;
 
-	TransferCommand value() default TransferCommand.STORE;
-
-	enum TransferCommand {PUT, STORE}
-
 }

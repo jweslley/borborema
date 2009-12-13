@@ -20,14 +20,14 @@ public class Fibonacci implements Task<BigInteger> {
 			return new BigInteger("1");
 		}
 
-		BigInteger f = new BigInteger("0");
-		BigInteger g = new BigInteger("1");
+		BigInteger a = new BigInteger("0");
+		BigInteger b = new BigInteger("1");
 
 		for (int i = 1; i <= n; i++) {
-			f = f.add(g);
-			g = f.subtract(g);
+			a = a.add(b);
+			b = a.subtract(b);
 		}
-		return f;
+		return a;
 	}
 
 }
